@@ -2,6 +2,9 @@ const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
+const sendEmail=require("../utils/sendEmail.js")
+const crypto =require("crypto")
+
 
 //* Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
@@ -57,3 +60,65 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
     message: "Logged Out",
   });
 });
+
+// Forgot Password 
+exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
+  const user= await User.findOne({ email: req.body.email });
+  if(!user){
+      return next(new ErrorHandler("user not found", 404));
+      }
+      // Get ResetPassword Tokan
+      const resetTokan = user.getResetPasswordTokan();
+      await user.save({ validateBeforeSave: false });
+
+      const resetPasswordUrl = '${req.protocol}://${req.get("host")}/api/v1/password/reset/${resetTokan}';
+
+        const message = 'Your password reset tokan is :- \n\n ${resetPasswordUrl} \n\nIf you have not requested this email then, please ignore it ' ;
+        try{
+          await sendEmail({
+            email: user.email,
+            subject: "Your Password Reset Request",
+            message,
+          });
+          
+          res.status(200).json({
+              success:true,
+              message:'Email sent to ${user.email} successfully',
+          });
+          }catch(error){
+            user.resetPasswordToken=undefined;
+            user.resetPasswordExpire=undefined;
+            
+            await user.save({validateBeforeSave :false});
+            return next(new ErrorHandler(error.message ,500));
+          }
+
+        });
+// reset password
+        exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
+          // creating tokan has
+          const resetPasswordToken=cryptocreateHash("sha256").update(req.params.tokan).digest("hex") ;
+
+          const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire:{$gt: Date.now()},
+          });
+          if(!user){
+            return next(new ErrorHandler("reset password tokan is invalid or has been expired", 404));
+            }
+
+            if(req.body.password !== req.body.confirmPassword ){
+              return  next(new ErrorHandler("Passwords does not password", 400));
+            }
+
+            user.password=req.body.password;
+            user.resetPasswordToken=undefined;
+            user.resetPasswordExpire=undefined;
+            await user.save();
+
+            sendToken(user,200,res);
+
+
+        });
+
+        
