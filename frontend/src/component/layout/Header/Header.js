@@ -1,6 +1,6 @@
 import React from "react";
 import { ReactNavbar } from "overlay-navbar";
-import Tshirt_Hvn from "../images/TshirtBlack.png";
+import Tshirt_Hvn from "../../../images/TshirtBlack.png";
 import { CgProfile } from "react-icons/cg";
 import { MdSearch } from "react-icons/md";
 import { MdOutlineShoppingCart } from "react-icons/md";
@@ -11,7 +11,7 @@ const Header = () => {
       burgerColorHover="#eb4034"
       logo={Tshirt_Hvn}
       logoWidth="15vmax"
-      navColor1="#99989a"
+      navColor1="white"
       logoHoverSize="10px"
       logoHoverColor="#eb4034"
       link1Text="Home"
