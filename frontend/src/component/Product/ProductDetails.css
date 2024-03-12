@@ -1,0 +1,11 @@
+.ProductDetails .CarouselImage {
+    width: 100%;
+    max-width: 200px; /* Adjust as needed */
+    height: auto;
+    border: 2px solid #ccc; /* Border color */
+    border-radius: 8px; /* Border radius */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Box shadow */
+    margin-bottom: 20px; /* Margin bottom */
+    padding: 6vmax;
+    background-color: bisque;
+}
